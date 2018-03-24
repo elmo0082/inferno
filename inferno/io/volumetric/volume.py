@@ -11,7 +11,7 @@ from ...utils import python_utils as pyu
 
 class VolumeLoader(SyncableDataset):
     def __init__(self, volume, window_size, stride, downsampling_ratio=None, padding=None,
-                 padding_mode='reflect', transforms=None, return_index_spec=False, name=None):
+                 padding_mode='reflect', transforms=None, return_index_spec=False, name=None, volume_already_padded=False):
         super(VolumeLoader, self).__init__()
         # Validate volume
         assert isinstance(volume, np.ndarray)
@@ -45,7 +45,8 @@ class VolumeLoader(SyncableDataset):
             self.padding = [[0, 0]] * self.volume.ndim
         else:
             self.padding = padding
-            self.pad_volume()
+            if not volume_already_padded:
+                self.pad_volume()
 
         self.base_sequence = self.make_sliding_windows()
 
