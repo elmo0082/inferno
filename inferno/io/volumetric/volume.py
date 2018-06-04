@@ -62,6 +62,7 @@ class VolumeLoader(SyncableDataset):
 
     def make_sliding_windows(self):
         return list(vu.slidingwindowslices(shape=list(self.volume.shape),
+                                           ds=self.downsampling_ratio,
                                            window_size=self.window_size,
                                            strides=self.stride,
                                            shuffle=self.shuffle,
