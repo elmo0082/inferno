@@ -1,19 +1,19 @@
 
 
 class Metric(object):
-    def __init__(self, is_multiscale=False):
-        self.is_multiscale = is_multiscale
 
     def forward(self, *args, **kwargs):
         raise NotImplementedError
 
     def __call__(self, prediction, target, **kwargs):
-        # For multiscale training, we only care about the 0th scale level
-        # for evaluation and extract it
-        if self.is_multiscale:
+        # We might have listlike predictions (e.g. multi-scale)
+        # If so, we evaluate the metric on the first prediction,
+        # which should be at the original scale
+        if isinstance(prediction, (list, tuple)):
             prediction = prediction[0]
+        # same is true for the target
+        if isinstance(target, (list, tuple)):
             target = target[0]
-
         # Make sure prediction and target live on the same device.
         # If they don't, move target to the right device.
         if not prediction.is_cuda:
