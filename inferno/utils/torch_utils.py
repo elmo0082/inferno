@@ -38,8 +38,8 @@ def unwrap(tensor_or_variable, to_cpu=True, as_numpy=False, extract_item=False):
 
 
 def is_tensor(object_):
-    missed_tensor_classes = {torch.HalfTensor}
-    return torch.is_tensor(object_) or type(object_) in missed_tensor_classes
+    missed_tensor_classes = (torch.HalfTensor,)
+    return torch.is_tensor(object_) or isinstance(object_, missed_tensor_classes)
 
 
 def is_label_tensor(object_):
@@ -76,6 +76,10 @@ def is_matrix_tensor(object_):
 
 def is_scalar_tensor(object_):
     return is_tensor(object_) and object_.dim() <= 1 and object_.numel() == 1
+
+
+def is_vector_tensor(object_):
+    return is_tensor(object_) and object_.dim() == 1 and object_.numel() > 1
 
 
 def assert_same_size(tensor_1, tensor_2):
@@ -149,3 +153,15 @@ def flatten_samples(tensor_or_variable):
     # Now flatten out all but the first axis and return
     flattened = permuted.view(num_channels, -1)
     return flattened
+
+
+def clip_gradients_(parameters, mode, norm_or_value):
+    assert_(mode in ['norm', 'value'],
+            f"Mode must be 'norm' or 'value', got '{mode}' instead.",
+            ValueError)
+    if mode == 'norm':
+        torch.nn.utils.clip_grad_norm_(parameters, norm_or_value)
+    elif mode == 'value':
+        torch.nn.utils.clip_grad_value_(parameters, norm_or_value)
+    else:
+        raise NotImplementedError
