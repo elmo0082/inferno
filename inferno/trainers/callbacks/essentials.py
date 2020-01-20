@@ -275,3 +275,38 @@ class GradientClip(Callback):
 
     def after_model_and_loss_is_applied(self, **_):
         tu.clip_gradients_(self.trainer.model.parameters(), self.mode, self.norm_or_value)
+
+
+class SaveModelCallback(Callback):
+    def __init__(self, save_every):
+        super(Callback, self).__init__()
+        self.save_every = save_every
+
+    def end_of_training_iteration(self, **_):
+        if self.trainer._iteration_count % self.save_every == 0:
+            self.trainer.console.info("Saving model")
+            self.trainer.save_model()
+            
+            
+# class PlotReconstructedCallback(Callback):
+#     def __init__(self, plot_every):
+#         super(Callback, self).__init__()
+#         self.plot_every = plot_every
+# 
+#     def end_of_training_iteration(self, **_):
+#         if self.trainer._iteration_count % self.plot_every == 0:
+#             criterion = self.trainer.criterion
+#             # self.trainer.console.info("Plot predictions")
+# 
+#             # self.trainer.logger.log_images("patch_target_0", criterion.all_targets[0].cpu().detach().numpy()[0,:,0], step=self.trainer.iteration_count)
+#             # self.trainer.logger.log_images("patch_pred_0", criterion.all_pred_poatch[0].cpu().detach().numpy()[0,:,0], step=self.trainer.iteration_count)
+#             # self.trainer.logger.log_images("random_patch", criterion.random_prediction.cpu().detach().numpy()[0,:,0], step=self.trainer.iteration_count)
+#             # self.trainer.logger.log_images("predicted_patch_1",
+#             #                                criterion.emb_prediction.cpu().detach().numpy()[0, [1], 0],
+#             #                                step=self.trainer.iteration_count)
+#             # self.trainer.logger.log_images("predicted_patch_2",
+#             #                                criterion.emb_prediction.cpu().detach().numpy()[0, [2], 0],
+#             #                                step=self.trainer.iteration_count)
+#             # self.trainer.logger.log_images("predicted_patch_3",
+#             #                                criterion.emb_prediction.cpu().detach().numpy()[0, [3], 0],
+#             #                                step=self.trainer.iteration_count)
