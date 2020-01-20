@@ -6,6 +6,7 @@ from ...utils.train_utils import Frequency
 from ...utils.exceptions import assert_, FrequencyValueError, NotUnwrappableError
 from ...utils import python_utils as pyu
 from .base import Callback
+import gc
 
 
 class NaNDetector(Callback):
@@ -310,3 +311,12 @@ class SaveModelCallback(Callback):
 #             # self.trainer.logger.log_images("predicted_patch_3",
 #             #                                criterion.emb_prediction.cpu().detach().numpy()[0, [3], 0],
 #             #                                step=self.trainer.iteration_count)
+
+class GarbageCollection(Callback):
+    """
+    Callback that triggers garbage collection at the end of every 
+    training iteration in order to reduce the memory footprint of training
+    """
+
+    def end_of_training_iteration(self, **_):
+        gc.collect()
