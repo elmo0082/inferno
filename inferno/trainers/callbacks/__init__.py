@@ -11,3 +11,4 @@ try:
     __all__.append('TQDMProgressBar')
 except ImportError:
     from .tqdmstub import TQDMProgressBar
+
