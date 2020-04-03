@@ -317,7 +317,7 @@ class PlotReconstructedCallback(Callback):
 
 class GarbageCollection(Callback):
     """
-    Callback that triggers garbage collection at the end of every 
+    Callback that triggers garbage collection at the end of every
     training iteration in order to reduce the memory footprint of training
     """
 
