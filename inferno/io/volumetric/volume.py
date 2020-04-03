@@ -109,11 +109,11 @@ class VolumeLoader(SyncableDataset):
     def make_sliding_windows(self):
         shape = self.volume.shape[1:] if self.is_multichannel else self.volume.shape
         return list(vu.slidingwindowslices(shape=list(shape),
-                                           ds=self.downsampling_ratio,
                                            window_size=self.window_size,
                                            strides=self.stride,
                                            shuffle=self.shuffle,
-                                           add_overhanging=True))
+                                           add_overhanging=True,
+                                           ds=self.downsampling_ratio))
 
     def __getitem__(self, index):
         # Casting to int would allow index to be IndexSpec objects.

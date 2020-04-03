@@ -152,42 +152,6 @@ class ConvActivation(nn.Module):
         ]
         return tuple(padding)
 
-
-class ConvNormActivation(ConvActivation):
-    def __init__(self, in_channels, out_channels, kernel_size, dim, activation,
-                 normalization=None,
-                 num_groups_norm=None,
-                 **super_kwargs):
-        super(ConvNormActivation, self).__init__(in_channels, out_channels, kernel_size,
-                                                 dim, activation, **super_kwargs)
-
-        # FIXME: generalize to Batchnorm...
-        if isinstance(normalization, str):
-            assert num_groups_norm is not None
-            self.normalization = getattr(nn, normalization)(num_groups=num_groups_norm,
-                                                            num_channels=out_channels)
-        elif isinstance(normalization, nn.Module):
-            assert num_groups_norm is not None
-            self.normalization = normalization(num_groups=num_groups_norm,
-                                               num_channels=out_channels)
-        elif normalization is None:
-            self.normalization = None
-        else:
-            raise NotImplementedError
-
-    def forward(self, input):
-        conved = self.conv(input)
-        if self.normalization is not None:
-            normalized = self.normalization(conved)
-        else:
-            normalized = conved
-        if self.activation is not None:
-            activated = self.activation(normalized)
-        else:
-            # No activation
-            activated = normalized
-        return activated
-
 # for consistency
 ConvActivationND = ConvActivation
 
