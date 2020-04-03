@@ -48,6 +48,7 @@ class NNGraph(nx.DiGraph):
         return new
 
 
+
 class Graph(nn.Module):
     """
     A graph structure to build networks with complex architectures. The resulting graph model
@@ -63,6 +64,7 @@ class Graph(nn.Module):
         >>> from inferno.extensions.layers.reshape import Concatenate
         >>> from inferno.extensions.layers.convolutional import ConvELU2D
         >>> import torch
+        >>> from torch.autograd import Variable
         >>> # Build the model
         >>> inception_module = Graph()
         >>> inception_module.add_input_node('input')
@@ -73,7 +75,7 @@ class Graph(nn.Module):
         >>>                           previous=['conv1x1', 'conv3x3', 'conv5x5'])
         >>> inception_module.add_output_node('output', 'cat')
         >>> # Build dummy variable
-        >>> input = torch.rand(1, 64, 100, 100)
+        >>> input = Variable(torch.rand(1, 64, 100, 100))
         >>> # Get output
         >>> output = inception_module(input)
 
@@ -130,7 +132,7 @@ class Graph(nn.Module):
         -------
         bool
         """
-        return name in self.graph.nodes
+        return name in self.graph.node
 
     def is_source_node(self, name):
         """
@@ -187,7 +189,7 @@ class Graph(nn.Module):
         list
             A list of names (str) of the output nodes.
         """
-        return [name for name, node_attributes in self.graph.nodes.items()
+        return [name for name, node_attributes in self.graph.node.items()
                 if node_attributes.get('is_output_node', False)]
 
     @property
@@ -201,7 +203,7 @@ class Graph(nn.Module):
         list
             A list of names (str) of the input nodes.
         """
-        return [name for name, node_attributes in self.graph.nodes.items()
+        return [name for name, node_attributes in self.graph.node.items()
                 if node_attributes.get('is_input_node', False)]
 
     @property
