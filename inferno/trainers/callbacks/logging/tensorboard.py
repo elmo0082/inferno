@@ -15,8 +15,8 @@ class TaggedImage(object):
 
 
 class TensorboardLogger(Logger):
-    """Class to enable logging of training progress to Tensorboard.
-
+    """
+    Class to enable logging of training progress to Tensorboard.
     Currently supports logging scalars and images.
     """
     # This is hard coded because tensorboardX doesn't have a __version__
@@ -25,8 +25,10 @@ class TensorboardLogger(Logger):
 
     def __init__(self, log_directory=None,
                  log_scalars_every=None, log_images_every=None, log_histograms_every=None,
+                 log_persistence_diagrams_every=None,
                  send_image_at_batch_indices='all', send_image_at_channel_indices='all',
                  send_volume_at_z_indices='mid'):
+        # The parameter log_persistence_diagrams_every=None had to be added to allow for persistence diagram logging.
         """
         Parameters
         ----------
@@ -36,6 +38,8 @@ class TensorboardLogger(Logger):
             How often scalars should be logged to Tensorboard. By default, once every iteration.
         log_images_every : str or tuple or inferno.utils.train_utils.Frequency
             How often images should be logged to Tensorboard. By default, once every epoch.
+        log_persistence_diagrams : str or tuple or inferno.utils.train_utils.Frequency
+            How often persistence diagrams should be logged to Tensorboard. By default, once every epoch.
         log_histograms_every : str or tuple or inferno.utils.train_utils.Frequency
             How often histograms should be logged to Tensorboard. By default, never.
         send_image_at_batch_indices : list or str
@@ -59,6 +63,7 @@ class TensorboardLogger(Logger):
         self._log_scalars_every = None
         self._log_images_every = None
         self._log_histograms_every = None
+        self._log_persistence_diagrams_every = None
         self._writer = None
         self._config = {'image_batch_indices': send_image_at_batch_indices,
                         'image_channel_indices': send_image_at_channel_indices,
@@ -79,6 +84,8 @@ class TensorboardLogger(Logger):
             self.log_images_every = log_images_every
         if log_histograms_every is not None:
             self.log_histograms_every = log_histograms_every
+        if log_persistence_diagrams_every is not None:
+            self.log_persistence_diagrams_every = log_persistence_diagrams_every
 
     @property
     def writer(self):
@@ -140,6 +147,25 @@ class TensorboardLogger(Logger):
                                                epoch_count=self.trainer.epoch_count,
                                                persistent=True)
 
+    @property
+    def log_persistence_diagram_every(self):
+        print("logging value:", self._log_persistence_diagram_every)
+        if self._log_persistence_diagram_every is None:
+            self._log_persistence_diagram_every = tru.Frequency(1, 'epochs')
+        return self._log_persistence_diagram_every
+
+    @log_persistence_diagram_every.setter
+    def log_persistence_diagram_every(self, value):
+        self._log_persistence_diagram_every = tru.Frequency.build_from(value)
+
+    @property
+    def log_persistence_diagram_now(self):
+        # Using persistent=True in a property getter is probably not a very good idea...
+        # We need to make sure that this getter is called only once per callback-call.
+        return self.log_persistence_diagram_every.match(iteration_count=self.trainer.iteration_count,
+                                           epoch_count=self.trainer.epoch_count,
+                                           persistent=True)
+
     def observe_state(self, key, observe_while='training'):
         # Validate arguments
         keyword_mapping = {'train': 'training',
@@ -194,7 +220,8 @@ class TensorboardLogger(Logger):
     def log_object(self, tag, object_,
                    allow_scalar_logging=True,
                    allow_image_logging=True,
-                   allow_histogram_logging=True):
+                   allow_histogram_logging=True,
+                   allow_persistence_diagram_logging=True):
         assert isinstance(tag, str)
         if isinstance(object_, (list, tuple)):
             for object_num, _object in enumerate(object_):
@@ -202,7 +229,8 @@ class TensorboardLogger(Logger):
                                 _object,
                                 allow_scalar_logging,
                                 allow_image_logging,
-                                allow_histogram_logging)
+                                allow_histogram_logging,
+                                allow_persistence_diagram_logging)
             return
 
         # Check whether object is a scalar
